@@ -1,9 +1,11 @@
 # Databricks notebook source
 from pyspark.sql import functions as F
+from Validation import validate_kafka_dataframe
+from pyspark.sql import SparkSession
 
 
 class KafkaClient:
-
+    spark = SparkSession.builder.appName("Kafka_spark_integration").getOrCreate()
 
     def __init__(self, bootstrap_server: str, username: str, password: str):
         self._bootstrap_server = bootstrap_server
