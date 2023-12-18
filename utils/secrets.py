@@ -1,7 +1,9 @@
-# Databricks notebook source
 from azure.identity import ClientSecretCredential
 from azure.keyvault.secrets import SecretClient
 from azure.core.exceptions import ResourceNotFoundError
+from utils.logging import LogGenerator
+
+logger = LogGenerator().GetLogger()
 
 class AzureSecret:
 
@@ -18,10 +20,11 @@ class AzureSecret:
             return secret.value
 
         except ResourceNotFoundError:
-            print(f"Secret '{secret_name}' not found in Azure Key Vault.")
+            logger.error(f"Secret '{secret_name}' not found in Azure Key Vault.")
+            raise
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
+            raise
 
 
-# COMMAND ----------
 

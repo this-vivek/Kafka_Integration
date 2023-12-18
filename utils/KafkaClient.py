@@ -2,11 +2,13 @@
 from pyspark.sql import functions as F
 from Validation import validate_kafka_dataframe
 from pyspark.sql import SparkSession
+from utils.logging import LogGenerator
 
+logger = LogGenerator().GetLogger()
+
+spark = SparkSession.builder.appName("KafkaClient").getOrCreate()
 
 class KafkaClient:
-    spark = SparkSession.builder.appName("Kafka_spark_integration").getOrCreate()
-
     def __init__(self, bootstrap_server: str, username: str, password: str):
         self._bootstrap_server = bootstrap_server
         self._security_protocol = "SASL_SSL"
@@ -20,8 +22,8 @@ class KafkaClient:
         try:
             topics = ",".join(topics)
             kafka_read_stream_df = (spark.readStream.format("kafka")
-                                                    .option("kafka.bootstrap.servers", obj._bootstrap_server)
-                                                    .option("kafka.security.protocol", obj._security_protocol)
+                                                    .option("kafka.bootstrap.servers", self._bootstrap_server)
+                                                    .option("kafka.security.protocol", self._security_protocol)
                                                     .option("kafka.sasl.jaas.config", self._sasl_jaas_config)
                                                     .option("kafka.ssl.endpoint.identification.algorithm", self._endpoint_identification_algorithm)
                                                     .option("kafka.sasl.mechanism", self._sasl_mechansim)
@@ -37,8 +39,8 @@ class KafkaClient:
         try:
             topics = ",".join(topics)
             kafka_read_df = (spark.read.format("kafka")
-                                                    .option("kafka.bootstrap.servers", obj._bootstrap_server)
-                                                    .option("kafka.security.protocol", obj._security_protocol)
+                                                    .option("kafka.bootstrap.servers", self._bootstrap_server)
+                                                    .option("kafka.security.protocol", self._security_protocol)
                                                     .option("kafka.sasl.jaas.config", self._sasl_jaas_config)
                                                     .option("kafka.ssl.endpoint.identification.algorithm", self._endpoint_identification_algorithm)
                                                     .option("kafka.sasl.mechanism", self._sasl_mechansim)
@@ -57,27 +59,28 @@ class KafkaClient:
             # verify columns and type
             kafka_stream_df = validate_kafka_dataframe(kafka_stream_df)
             kafka_write_stream = (kafka_stream_df.writeStream.format("kafka")
-                                                    .option("kafka.bootstrap.servers", obj._bootstrap_server)
-                                                    .option("kafka.security.protocol", obj._security_protocol)
+                                                    .option("kafka.bootstrap.servers", self._bootstrap_server)
+                                                    .option("kafka.security.protocol", self._security_protocol)
                                                     .option("kafka.sasl.jaas.config", self._sasl_jaas_config)
                                                     .option("kafka.ssl.endpoint.identification.algorithm", self._endpoint_identification_algorithm)
                                                     .option("kafka.sasl.mechanism", self._sasl_mechansim)
                                                     .option("topic",topic_name)
                                                     .options(**args)
                                                     .start())
+            logger.info("kafka write stream started")
             return kafka_write_stream
         except:
-            # logging
+            logger.error("kafka write stream failed")
             raise
 
-    def write_batch(self, kafka_df, **args):
+    def write_batch(self, kafka_df,topic_name, **args):
         try:
             # verify columns and type
             kafka_df = validate_kafka_dataframe(kafka_df)
 
             (kafka_df.write.format("kafka")
-                            .option("kafka.bootstrap.servers", obj._bootstrap_server)
-                            .option("kafka.security.protocol", obj._security_protocol)
+                            .option("kafka.bootstrap.servers", self._bootstrap_server)
+                            .option("kafka.security.protocol", self._security_protocol)
                             .option("kafka.sasl.jaas.config", self._sasl_jaas_config)
                             .option("kafka.ssl.endpoint.identification.algorithm", self._endpoint_identification_algorithm)
                             .option("topic",topic_name)
@@ -85,9 +88,11 @@ class KafkaClient:
                             .option("topic",topic_name)
                             .options(**args)
                             .save())
+            logger.info("kafka write successful")
+            
             return True
         except:
-            # logging
+            logger.info("kafka write failed")
             raise
 
 
