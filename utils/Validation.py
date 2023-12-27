@@ -3,6 +3,13 @@ from utils.logging import LogGenerator
 logger = LogGenerator().GetLogger()
 
 def validate_kafka_dataframe(kafka_df):
+    """
+    Provide Validation for kafka write dataframe with sets of assertions.
+    params:
+        kafka_df: Spark Dataframe
+    returns:
+        spark dataframe
+    """
     kafka_df_dict = {col_name:col_type for col_name,col_type in kafka_df.dtypes}
     required_columns = {"value":{"string","binary"}}
     optional_columns = {"key": {"string","binary"},

@@ -2,6 +2,10 @@
 import logging
 
 class LogGenerator:
+    """
+    This class initializes logger with predefined parameters and returns logger object for further logging.
+    Used through out the project.
+    """
     def __init__(self,file_path = '.\logs.txt'):
         self.file_path = file_path
     

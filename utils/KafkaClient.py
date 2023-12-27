@@ -1,4 +1,3 @@
-# Databricks notebook source
 from pyspark.sql import functions as F
 from Validation import validate_kafka_dataframe
 from pyspark.sql import SparkSession
@@ -9,6 +8,11 @@ logger = LogGenerator().GetLogger()
 spark = SparkSession.builder.appName("KafkaClient").getOrCreate()
 
 class KafkaClient:
+    """
+    This class provide functionality to connect apache kafka
+    with apache spark by providing read and write methods for both batch & stream operations.
+    """
+
     def __init__(self, bootstrap_server: str, username: str, password: str):
         self._bootstrap_server = bootstrap_server
         self._security_protocol = "SASL_SSL"
@@ -19,6 +23,16 @@ class KafkaClient:
     
     
     def read_stream(self, topics: list, **args):
+        """
+        returns spark streaming dataframe.
+        params:
+            topics: list
+                list of topics to read.
+            args:  dict
+                optional configuration to provide while reading kafka stream
+        returns:
+            spark streaming dataframe
+        """
         try:
             topics = ",".join(topics)
             kafka_read_stream_df = (spark.readStream.format("kafka")
@@ -31,11 +45,21 @@ class KafkaClient:
                                                     .load()
                                                     .withColumn("value",F.col("value").cast("string")).withColumn("key",F.col("key").cast("string")))
             return kafka_read_stream_df
-        except:
-            # logging
+        except Exception as e:
+            logger.error(f"Exception occured while reading stream for topics {topics}")
             raise
     
     def read_batch(self, topics: list, **args):
+        """
+        returns spark batch dataframe.
+        params:
+            topics: list
+                list of topics to read.
+            args:  dict
+                optional configuration to provide while reading kafka stream
+        returns:
+            spark batch dataframe
+        """ 
         try:
             topics = ",".join(topics)
             kafka_read_df = (spark.read.format("kafka")
@@ -50,11 +74,22 @@ class KafkaClient:
                                                     .withColumn("value",F.col("value").cast("string")).withColumn("key",F.col("key").cast("string")))
 
             return kafka_read_df
-        except:
-            # logging
+        except Exception as e:
+            logger.error(f"Exception occured while reading topics {topics}")
+
             raise
 
     def write_stream(self, kafka_stream_df, topic_name, **args):
+        """
+        writes spark stream into kafka.
+        params:
+            kafka_stream_df: spark streaming dataframe
+            topic_name:  string
+            args: dict:
+                optional configuration to provide while writing kafka stream
+        returns:
+            spark streaming object
+        """
         try:
             # verify columns and type
             kafka_stream_df = validate_kafka_dataframe(kafka_stream_df)
@@ -74,6 +109,16 @@ class KafkaClient:
             raise
 
     def write_batch(self, kafka_df,topic_name, **args):
+        """
+        writes spark dataframe into kafka.
+        params:
+            kafka_df: spark batch dataframe
+            topic_name:  string
+            args: dict:
+                optional configuration to provide while writing kafka stream
+        returns:
+            bool
+        """
         try:
             # verify columns and type
             kafka_df = validate_kafka_dataframe(kafka_df)
@@ -95,6 +140,4 @@ class KafkaClient:
             logger.info("kafka write failed")
             raise
 
-
-# COMMAND ----------
 
