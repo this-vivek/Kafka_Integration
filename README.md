@@ -45,3 +45,9 @@ To use this project, follow these steps:
    ```bash
    git clone https://github.com/your-username/your-spark-kafka-project.git
    cd your-spark-kafka-project
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+3. Run the orchestration script:
+  ```bash
+   python orchestrate.py "{'keyvault_args':'value'}" "{'adls_args':'value'}" "{'job_level_args':'value'}"
