@@ -43,8 +43,8 @@ To use this project, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/your-spark-kafka-project.git
-   cd your-spark-kafka-project
+   git clone https://github.com/charlie239-CU/Kafka_Integration.git
+   cd Kafka_Integration
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
