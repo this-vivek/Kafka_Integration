@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch, Mock
-from ..utils.secrets import AzureSecret
+from utils.secrets import AzureSecret
+from azure.keyvault.secrets import SecretClient
+
 
 class TestAzureSecret(unittest.TestCase):
 
@@ -15,7 +17,7 @@ class TestAzureSecret(unittest.TestCase):
         # Mock the Azure Key Vault interactions
         mock_credential.return_value = Mock()
         mock_secret = Mock(value='password')
-        mock_secret_client.return_value.get_secret.return_value = mock_secret
+        mock_secret_client.get_secret.return_value = 'password'
 
         # Create an instance of AzureSecret for testing
         azure_secret = AzureSecret("https://your-key-vault-url", "your-tenant-id", "your-client-id", "your-client-secret")

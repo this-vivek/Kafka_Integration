@@ -7,6 +7,9 @@ from utils.secrets import AzureSecret
 from utils.KafkaClient import KafkaClient
 from utils.Adls import Adls
 from utils.StructSchema import rating_playstore_schema
+from utils.logging import LogGenerator
+
+logger = LogGenerator().GetLogger()
 
 def write_to_delta_lake(batch_df, batch_id):
     global path
@@ -44,13 +47,15 @@ def main():
     topic_name = ["rating_playstore"]
     kafka_stream_df = kafka_client_obj.read_stream(topic_name)
 
+    logger.info("stream started, writing into delta lake")
     kafka_stream_obj = kafka_stream_df.writeStream.trigger(processingTime="10 seconds").option("checkpointLocation",f"{path}/rating_playstore_checkpoint/").foreachbatch(write_to_delta_lake).start()
 
     flag = kafka_stream_obj.awaitTermination(3600) # 1 hour time
     if not flag:
         kafka_stream_obj.stop()
+        logger.info("stream stopped forcefully")
 
-    # loggings required each step
+
 if __name__ == "main":
     main()
 

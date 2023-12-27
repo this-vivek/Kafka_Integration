@@ -1,1 +1,4 @@
 2023-12-19 00:25:09,945 - ERROR - An error occurred: <urllib3.connection.HTTPSConnection object at 0x0000026B468BEA50>: Failed to resolve 'your-key-vault-url' ([Errno 11001] getaddrinfo failed)
+2023-12-19 12:38:10,933 - ERROR - An error occurred: <urllib3.connection.HTTPSConnection object at 0x0000021EE92DE8D0>: Failed to resolve 'your-key-vault-url' ([Errno 11001] getaddrinfo failed)
+2023-12-19 12:45:19,731 - ERROR - An error occurred: <urllib3.connection.HTTPSConnection object at 0x000001739660AB50>: Failed to resolve 'your-key-vault-url' ([Errno 11001] getaddrinfo failed)
+2023-12-19 12:47:28,624 - ERROR - An error occurred: <urllib3.connection.HTTPSConnection object at 0x00000209000F9490>: Failed to resolve 'your-key-vault-url' ([Errno 11001] getaddrinfo failed)
