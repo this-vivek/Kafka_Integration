@@ -1,35 +1,37 @@
-# Databricks notebook source
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
 from pyspark.sql import functions as F
+import sys
+import json
 
 from utils.secrets import AzureSecret
 from utils.KafkaClient import KafkaClient
 from utils.Adls import Adls
-from utils.StructSchema import rating_playstore_schema
+from utils.StructSchema import rating_playstore_schema,fetch_schema
 from utils.logging import LogGenerator
 
 logger = LogGenerator().GetLogger()
 
-def write_to_delta_lake(batch_df, batch_id):
-    global path
-    flatten_df = batch_df.withColumn("value",F.from_json("value",rating_playstore_schema)).select("key","value.*")
-    hashed_df = flatten_df.withColumn("author_name",F.sha2("author_name",256)).withColumn("review_text",F.sha2("review_text",256))
-    final_df = hashed_df.withColumn("review_timestamp",F.to_timestamp("review_timestamp","dd-MM-yyyy HH:mm:ss a")).withColumn("current_timestamp",F.current_timestamp())
-    final_df.write.format("delta").mode("append").save(f"{path}/rating_playstore")
+
     
 
 def main():
     spark = SparkSession.builder.appName("Kafka_spark_integration").getOrCreate()
 
-    key_vault_url = "https://<your-key-vault-name>.vault.azure.net/"
-    tenant_id = "<your-tenant-id>"
-    client_id = "<your-client-id>"
-    client_secret = "<your-client-secret>"
+    args = sys.argv
+    keyvault_args = json.loads(args[0])
+    adls_args = json.loads(args[1])
+    job_args = json.loads(args[2])
 
-    adls_account_name = "<your-adls-account-name>"
-    adls_container_name = "<your-container-name>"
-    adls_tenant_id = "<your-tenant-id>"
+
+    key_vault_url = keyvault_args["url"]
+    tenant_id = keyvault_args["tenant_id"]
+    client_id = keyvault_args["client_id"]
+    client_secret = keyvault_args["client_secret"]
+
+    adls_account_name = adls_args["account_name"]
+    adls_container_name = adls_args["container_name"]
+    adls_tenant_id = adls_args["tenant_id"]
 
     azure_secret_obj = AzureSecret(key_vault_url,tenant_id,client_id,client_secret)
 
@@ -41,14 +43,26 @@ def main():
     adls_obj = Adls(adls_account_name,adls_container_name,adls_tenant_id,adls_client_id,adls_client_secret)
     path = adls_obj.get_path()
 
-    kafka_bootstrap_server = "pkc-7prvp.centralindia.azure.confluent.cloud:9092"
+    kafka_bootstrap_server = job_args["bootstrap_server"]
 
     kafka_client_obj = KafkaClient(kafka_bootstrap_server,kafka_username,kafka_password)
-    topic_name = ["rating_playstore"]
+    topic_name = job_args["topic_list"]
+    checkpointLocation = path + "/" + job_args["checkpointLocation"]
+    table_name = job_args["table_name"]
+    schema_name = job_args["schema_name"]
+    schema = fetch_schema(schema_name)
+    if not schema:
+        logger.info(f"schema not found {schema_name}")
+
     kafka_stream_df = kafka_client_obj.read_stream(topic_name)
 
-    logger.info("stream started, writing into delta lake")
-    kafka_stream_obj = kafka_stream_df.writeStream.trigger(processingTime="10 seconds").option("checkpointLocation",f"{path}/rating_playstore_checkpoint/").foreachbatch(write_to_delta_lake).start()
+    def write_to_delta_lake(batch_df, batch_id):
+        flatten_df = batch_df.withColumn("value",F.from_json("value",schema)).select("key","value.*")
+        final_df = flatten_df.withColumn("current_timestamp",F.current_timestamp())
+        final_df.write.format("delta").mode("append").save(f"{path}/{table_name}")
+
+    logger.info(f"stream started, writing into delta lake {table_name}")
+    kafka_stream_obj = kafka_stream_df.writeStream.trigger(processingTime="10 seconds").option("checkpointLocation",checkpointLocation).foreachbatch(write_to_delta_lake).start()
 
     flag = kafka_stream_obj.awaitTermination(3600) # 1 hour time
     if not flag:
@@ -59,17 +73,4 @@ def main():
 if __name__ == "main":
     main()
 
-
-
-
-
-
-
-
-
-
-
-
-
-# COMMAND ----------
 

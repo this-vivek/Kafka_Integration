@@ -11,3 +11,10 @@ rating_playstore_schema = StructType([
                                 StructField("author_app_version",DecimalType()),
                                 StructField("review_timestamp",StringType())]    
                             )
+
+
+def fetch_schema(schema_name):
+    if schema_name == "rating_playstore":
+        return fetch_schema
+    
+    return None
