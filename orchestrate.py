@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import json
+
 from utils.logging import LogGenerator
 
 logger = LogGenerator().GetLogger()
@@ -47,7 +48,7 @@ def main():
         logger.info("ingestion unsuccessfull, skipping process_and_transformation script")
 
     # Executing process_and_transform with required arguments
-    process_and_transform_success_flag = execute_script(process_and_transform_script_path, *process_and_transform_args)
+    process_and_transform_success_flag = execute_script(process_and_transform_script_path, *process_and_transform_arguments)
 
     # In case of Failure
     if not process_and_transform_success_flag:
