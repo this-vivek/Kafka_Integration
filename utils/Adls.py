@@ -1,6 +1,7 @@
 # Databricks notebook source
 from pyspark.sql import SparkSession
 from utils.logging import LogGenerator
+import os
 
 spark = SparkSession.builder.appName("KafkaClient").getOrCreate()
 logger = LogGenerator().GetLogger()
@@ -38,3 +39,7 @@ class Adls:
     
     def get_path(self):
         return self.path
+    
+    def check_if_exists(self,adls_path):
+        exists = os.path.exists(adls_path)
+        return exists
