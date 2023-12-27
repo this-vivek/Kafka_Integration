@@ -51,3 +51,27 @@ To use this project, follow these steps:
 3. Run the orchestration script:
   ```bash
    python orchestrate.py "{'keyvault_args':'value'}" "{'adls_args':'value'}" "{'job_level_args':'value'}"
+
+Dummy Arguments:
+   ```python
+   {
+     "keyvault_args": {
+       "url": "https://example-keyvault.vault.azure.net",
+       "tenant_id": "your_tenant_id",
+       "client_id": "your_client_id",
+       "client_secret": "your_client_secret"
+     },
+     "adls_args": {
+       "account_name": "your_adls_account_name",
+       "container_name": "your_adls_container_name",
+       "tenant_id": "your_adls_tenant_id"
+     },
+     "job_args": {
+       "bootstrap_server": "your_kafka_bootstrap_server",
+       "topic_list": "your_topic_name",
+       "checkpointLocation": "/path/to/checkpoint",
+       "table_name": "your_table_name",
+       "schema_name": "your_schema_name"
+     }
+   }
+
