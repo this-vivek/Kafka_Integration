@@ -1,6 +1,1 @@
-add logging framework.
-add comments
-add further job to ingest.py
-plan for orchestration
-
-add unit testing
+Adding Airflow Orchestration scripts.
